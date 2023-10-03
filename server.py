@@ -13,27 +13,38 @@ def handle_client(client):
                 break
 
             message = data.decode()
-            if "salvar-nome:" in message:
+            if message.startswith("salvar-nome:"):
                 client_name = client['name']
+                
                 for c in clients:
                     if c == client:
-                        c['name'] = message.replace("salvar-nome:", "").strip()
+                        new_name = message.replace("salvar-nome:", "").strip()
+                        if new_name != "":
+                            c['name'] = new_name
+                        else:
+                            invalid_name = True
+                            c['socket'].send(f"Nome não pode ser vazio.".encode())
+                            data = "Nome inválido".encode()
+                        
                         break
-                data = f"Cliente {client_name} agora é {client['name']}".encode()
+                if not invalid_name:
+                    data = f"Cliente {client_name} agora é {client['name']}".encode()
+                    
                 print(data.decode())
             else:
                 data = f"{client['name']}: {message}".encode()
                 print(f"Recebido: {message}")
 
             for c in clients:
-                if c != client:
+                if c != client and data != "Nome inválido".encode():
                     c['socket'].send(data)
         except Exception as e:
             print(f"Erro: {str(e)}")
             break
     
     for c in clients:
-        c['socket'].send(f"{client['name']} desconectado.".encode())
+        if c != client:
+            c['socket'].send(f"{client['name']} desconectado.".encode())
     
     client_socket.close()
     clients.remove(client)
@@ -49,9 +60,9 @@ def parse_args():
     
     args = parser.parse_args()
     
-    return args.host, args.port
+    return args.host, args.port, args.max_clients
 
-host, port = parse_args()
+host, port, max_clients = parse_args()
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
@@ -65,7 +76,7 @@ clients = []
 while True:
     client_socket, addr = server.accept()
     
-    if len(clients) >= 1:
+    if len(clients) >= max_clients:
         client_socket.send("Servidor cheio.".encode())
         client_socket.close()
         
@@ -74,7 +85,7 @@ while True:
     print(f"Conexão aceita de {addr[0]}:{addr[1]}")
     
     name = generate_slug(2)
-    client_socket.send(f"Ben-vindo ao chat, {name}.".encode())
+    client_socket.send(f"Bem-vindo ao chat, {name}.\n".encode())
     
     for c in clients:
         c['socket'].send(f"{name} conectado.".encode())
