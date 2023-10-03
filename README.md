@@ -53,3 +53,15 @@ python client.py --host <host> --port <porta>
 ```bash
 python client.py -H <host> -P <porta> # Versão simplificada do comando
 ```
+
+- Durante a execução do cliente é possível enviar mensagens no chat, alterar o nome de usuário e sair do chat
+```bash
+# Enviar mensagem
+<mensagem>
+
+# Alterar nome de usuário
+/name <novo nome>
+
+# Sair do chat
+/quit
+```

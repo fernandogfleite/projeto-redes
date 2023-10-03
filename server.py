@@ -11,16 +11,17 @@ def handle_client(client):
             data = client['socket'].recv(1024)
             if not data:
                 break
-
+            invalid_name = False
             message = data.decode()
-            if message.startswith("salvar-nome:"):
+            if message.startswith("/name "):
                 client_name = client['name']
                 
                 for c in clients:
                     if c == client:
-                        new_name = message.replace("salvar-nome:", "").strip()
+                        new_name = message.replace("/name ", "").strip()
                         if new_name != "":
                             c['name'] = new_name
+                            c['socket'].send(f"Nome alterado com sucesso.".encode())
                         else:
                             invalid_name = True
                             c['socket'].send(f"Nome não pode ser vazio.".encode())

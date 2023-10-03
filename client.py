@@ -9,7 +9,7 @@ exit_signal = threading.Event()
 def send_message(client_socket):
     while not exit_signal.is_set():
         message = input("")
-        if message == "quit":
+        if message == "/quit":
             exit_signal.set()
             break
         client_socket.send(message.encode())
